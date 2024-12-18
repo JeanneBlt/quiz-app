@@ -1,0 +1,14 @@
+-dans le repertoire api
+```yaml
+docker image build -t quiz-local-api .
+``````yaml
+docker container run -it --rm -p 5000:5000 --name quiz-local-api quiz-local-api
+```
+
+-dans le repertoire ui
+```yaml
+docker image build -t quiz-local-ui .
+```
+```yaml
+docker container run -it --rm -p 3000:80 --name quiz-local-ui quiz-local-ui 
+```
