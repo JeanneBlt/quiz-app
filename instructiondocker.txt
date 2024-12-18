@@ -1,14 +1,22 @@
--dans le repertoire api
+--------------dans le repertoire api-------------
 ```yaml
 docker image build -t quiz-local-api .
 ``````yaml
 docker container run -it --rm -p 5000:5000 --name quiz-local-api quiz-local-api
 ```
 
--dans le repertoire ui
+-------------dans le repertoire ui-----------------
 ```yaml
 docker image build -t quiz-local-ui .
 ```
 ```yaml
 docker container run -it --rm -p 3000:80 --name quiz-local-ui quiz-local-ui 
 ```
+
+-----------liens des images prod------------
+jojodjo/quiz-prod-ui
+jojodjo/quiz-prod-api
+
+-----------run images en prod-------------
+docker container run -it --rm -p 5000:5000 --name quiz-prod-api jojodjo/quiz-prod-api
+docker container run -it --rm -p 3000:80 --name quiz-prod-ui jojodjo/quiz-prod-ui
