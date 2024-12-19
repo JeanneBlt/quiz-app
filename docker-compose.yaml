@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  api:
+    image: jojodjo/quiz-prod-api:latest
+    ports:
+      - "5000:5000"  # Expose le backend sur le port 5000 
+    environment:
+      FLASK_ENV: production
+    volumes:
+      - ./quiz-api/quiz.db:/app/quiz.db  # Exemple de volume pour la base de données locale
+
+  ui:
+    image: jojodjo/quiz-prod-ui:latest
+    ports:
+      - "3000:80"  # Le serveur Nginx écoute sur le port 80, redirigé vers 3000 en local
+    environment:
+      VITE_API_URL: http://localhost:5000  # Permet au frontend d'accéder au backend
