@@ -1,4 +1,4 @@
---------------dans le repertoire api-------------
+--------------dans le repertoire api (avec le point -------------
 ```yaml
 docker image build -t quiz-local-api .
 ``````yaml
@@ -20,3 +20,24 @@ jojodjo/quiz-prod-api
 -----------run images en prod-------------
 docker container run -it --rm -p 5000:5000 --name quiz-prod-api jojodjo/quiz-prod-api
 docker container run -it --rm -p 3000:80 --name quiz-prod-ui jojodjo/quiz-prod-ui
+
+
+
+--------dans le repertoire quiz-app ------------
+
+docker-compose up
+
+pour charger les images du cloud et les run http://localhost:5000/ pour l'app 
+
+
+
+---------upload les images sur MON docker hub PERSO ----------
+docker login
+->
+docker image build -t jojodjo/quiz-prod-api . 
+docker image build -t jojodjo/quiz-prod-ui . 
+
+-Push 
+
+docker image push jojodjo/quiz-prod-api
+docker image push jojodjo/quiz-prod-ui
