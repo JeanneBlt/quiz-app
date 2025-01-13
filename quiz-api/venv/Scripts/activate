@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\joaqu\OneDrive\Bureau\esiee\itE5\quiz-app\quiz-api\venv"
+VIRTUAL_ENV="C:\Users\joaqu\OneDrive\Bureau\esiee\e5\itE5\quiz-app\quiz-api\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
