@@ -1,3 +1,4 @@
+quiz-api/venv/
+.vscode
+quiz-api/__pycache__/
 quiz-api/quiz.db
-quiz-api/quiz.db-journal
-quiz-api/venv
