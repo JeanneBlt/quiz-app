@@ -40,7 +40,6 @@ def login():
             return {"message" :'Unauthorized' }, 401
 
 
-
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
 	return {"size": 0, "scores": []}, 200
