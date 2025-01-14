@@ -1,6 +1,6 @@
+import hashlib
 from flask import Flask, request
 from flask_cors import CORS
-import hashlib
 from jwt_utils import decode_token, build_token
 from questions import Question, add_question_to_db , del_all_question , get_quiz_length
 from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
@@ -71,50 +71,38 @@ def GetQuizInfo():
         return e, 402
     return {"size": size , "scores" : scores},200
 
-@app.route('/test-db', methods=['GET'])
-def test_db():
-    from database import fetch_all
-    try:
-        rows = fetch_all("SELECT * FROM quiz")
-        return {"message": "Database test successful", "data": rows}, 200
-    except Exception as e:
-        return {"message": f"Database test failed: {e}"}, 500
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    if not data or not data.get('password'):
+        return 'Unauthorized', 401
+
+    password = data.get('password').encode('UTF-8')
+    hash = hashlib.md5(password).digest()
+
+    if hash == b'\xd8\x17\x06PG\x92\x93\xc1.\x02\x01\xe5\xfd\xf4_@':
+        token = build_token()
+        return {"message": "Login successful", "token": token}, 200
+    else:
+        return {"message": "Unauthorized"}, 401
 
 @app.route('/questions', methods=['POST'])
 def post_question():
     token = request.headers.get('Authorization')
-    if not token:
+    if not token or not token.startswith("Bearer "):
         return {"message": "Unauthorized: Missing token"}, 401
 
-    if token.startswith("Bearer "):
-        token = token.split(" ")[1]
-    
+    token = token.split(" ")[1]
     try:
         decode_token(token)
     except Exception as e:
         return {"message": f"Unauthorized: {str(e)}"}, 402
-    
+
     data = request.get_json()
     if not data:
         return {"message": "Invalid request: Missing JSON body"}, 403
 
-    title = data.get('title')
-    texte = data.get('text')
-    image = data.get('image')
-    position = data.get('position')
-    possible_answer = data.get('possibleAnswers')
-
-    print(f"Title: {title}")
-    print(f"Texte: {texte}")
-    print(f"Image: {image}")
-    print(f"Position: {position}")
-    print(f"Possible Answer: {possible_answer}")
-
-
-    # if not all([title, texte, image, position, possible_answer]):
-    #     return {"message": "Invalid request: Missing required fields"}, 401
-
-    question = Question(title, texte, image, position, possible_answer)
+    question = Question(data['title'], data['text'], data['image'], data['position'], data['possibleAnswers'])
     return add_question_to_db(question)
 
 @app.route('/participations', methods=['POST'])
@@ -180,6 +168,50 @@ def supression_participants():
     return (response), status_cod
 
 
+
+@app.route('/questions', methods=['GET'])
+def get_question():
+    position = request.args.get('position')
+    if not position:
+        return {"message": "Position parameter is required"}, 400
+
+    question = get_question_by_position(int(position))
+    if not question:
+        return {"message": f"No question found at position {position}"}, 404
+
+    return question, 200
+
+
+@app.route('/questions/<int:question_id>', methods=['PUT'])
+def update_question(question_id):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    data = request.get_json()
+    if not data:
+        return {"message": "Invalid request: Missing JSON body"}, 403
+
+    return update_question_in_db(
+        question_id,
+        data['title'],
+        data['text'],
+        data['image'],
+        data['position'],
+        data['possibleAnswers']
+    )
+
+
+@app.route('/questions/all', methods=['DELETE'])
+def delete_all():
+    return delete_all_questions()
+
+
 if __name__ == "__main__":
     app.run()
-

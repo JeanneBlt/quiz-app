@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.abspath("quiz.db")  # Chemin vers votre base de données SQLite
+DB_PATH = os.path.abspath("quiz.db")  # Chemin vers la base de données SQLite
 print(f"Database path: {os.path.abspath('quiz.db')}")
 
 def init_db():
@@ -34,22 +34,18 @@ def init_db():
 def execute_query(query, params=()):
     """Exécute une requête SQL avec des paramètres."""
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        print(f"Executing query: {query} with params: {params}")  # Log pour déboguer
-        cursor.execute(query, params)
-        conn.commit()
-        conn.close()
+        with sqlite3.connect(DB_PATH, timeout=30) as conn:  # Timeout pour éviter "database is locked"
+            cursor = conn.cursor()
+            print(f"Executing query: {query} with params: {params}")  # Log pour déboguer
+            cursor.execute(query, params)
+            conn.commit()
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         raise
 
 def fetch_all(query, params=()):
     """Récupère tous les résultats d'une requête SQL."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    results = cursor.fetchall()
-    conn.close()
-    return results
-    
+    with sqlite3.connect(DB_PATH, timeout=30) as conn:  # Timeout pour éviter "database is locked"
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchall()
