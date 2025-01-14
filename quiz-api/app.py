@@ -1,10 +1,10 @@
+import hashlib
 from flask import Flask, request
 from flask_cors import CORS
-import hashlib
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db , del_all_question , get_quiz_length
+from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions , del_all_question , get_quiz_length
 from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
-from database import init_db
+from database import init_db, execute_query, fetch_all
 
 app = Flask(__name__)
 CORS(app)
@@ -71,17 +71,104 @@ def GetQuizInfo():
         return e, 402
     return {"size": size , "scores" : scores},200
 
-@app.route('/test-db', methods=['GET'])
-def test_db():
-    from database import fetch_all
-    try:
-        rows = fetch_all("SELECT * FROM quiz")
-        return {"message": "Database test successful", "data": rows}, 200
-    except Exception as e:
-        return {"message": f"Database test failed: {e}"}, 500
-
 @app.route('/questions', methods=['POST'])
 def post_question():
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    data = request.get_json()
+    if not data:
+        return {"message": "Invalid request: Missing JSON body"}, 403
+
+    question = Question(data['title'], data['text'], data['image'], data['position'], data['possibleAnswers'])
+    return add_question_to_db(question)
+
+
+@app.route('/questions', methods=['GET'])
+def get_question():
+    position = request.args.get('position')
+    if not position:
+        return {"message": "Position parameter is required"}, 400
+
+    question = get_question_by_position(int(position))
+    if not question:
+        return {"message": f"No question found at position {position}"}, 404
+
+    return question, 200
+
+
+@app.route('/questions/<int:question_id>', methods=['PUT'])
+def update_question(question_id):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    data = request.get_json()
+    if not data:
+        return {"message": "Invalid request: Missing JSON body"}, 403
+
+    return update_question_in_db(
+        question_id,
+        data['title'],
+        data['text'],
+        data['image'],
+        data['position'],
+        data['possibleAnswers']
+    )
+
+@app.route('/questions/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    try:
+        # Récupérer la position de la question à supprimer
+        position_query = "SELECT position FROM quiz WHERE id = ?"
+        result = fetch_all(position_query, (question_id,))
+        if not result:
+            return {"message": "Question not found"}, 404
+
+        position_to_remove = result[0][0]
+
+        # Supprimer la question
+        delete_query = "DELETE FROM quiz WHERE id = ?"
+        execute_query(delete_query, (question_id,))
+
+        # Décaler les positions des questions au-dessus
+        shift_query = """
+            UPDATE quiz
+            SET position = position - 1
+            WHERE position > ?
+        """
+        execute_query(shift_query, (position_to_remove,))
+
+        return '', 204
+    except Exception as e:
+        return {"message": f"Error deleting question: {str(e)}"}, 500
+
+@app.route('/questions/all', methods=['DELETE'])
+def delete_all():
+
     token = request.headers.get('Authorization')
     if not token:
         return {"message": "Unauthorized: Missing token"}, 401
@@ -93,29 +180,29 @@ def post_question():
         decode_token(token)
     except Exception as e:
         return {"message": f"Unauthorized: {str(e)}"}, 402
+    return delete_all_questions()
     
-    data = request.get_json()
-    if not data:
-        return {"message": "Invalid request: Missing JSON body"}, 403
+@app.route('/questions/<int:question_id>', methods=['GET'])
+def get_question_by_id(question_id):
+    try:
+        query = "SELECT * FROM quiz WHERE id = ?"
+        result = fetch_all(query, (question_id,))
+        if not result:
+            return {"message": "Question not found"}, 404
 
-    title = data.get('title')
-    texte = data.get('text')
-    image = data.get('image')
-    position = data.get('position')
-    possible_answer = data.get('possibleAnswers')
+        question_data = result[0]
+        question = {
+            "id": question_data[0],
+            "title": question_data[1],
+            "text": question_data[2],
+            "image": question_data[3],
+            "position": question_data[4],
+            "possibleAnswers": json.loads(question_data[5]),
+        }
 
-    print(f"Title: {title}")
-    print(f"Texte: {texte}")
-    print(f"Image: {image}")
-    print(f"Position: {position}")
-    print(f"Possible Answer: {possible_answer}")
-
-
-    # if not all([title, texte, image, position, possible_answer]):
-    #     return {"message": "Invalid request: Missing required fields"}, 401
-
-    question = Question(title, texte, image, position, possible_answer)
-    return add_question_to_db(question)
+        return question, 200
+    except Exception as e:
+        return {"message": f"Error retrieving question: {str(e)}"}, 500
 
 @app.route('/participations', methods=['POST'])
 def add_participant():
@@ -146,22 +233,6 @@ def add_participant():
 
 
 
-@app.route('/questions/all', methods=['DELETE'])
-def supression_questions():
-    token = request.headers.get('Authorization')
-    if not token:
-        return {"message": "Unauthorized: Missing token"}, 401
-
-    if token.startswith("Bearer "):
-        token = token.split(" ")[1]
-    
-    try:
-        decode_token(token)
-    except Exception as e:
-        return {"message": f"Unauthorized: {str(e)}"}, 402
-    response, status_cod = del_all_question()
-    return (response), status_cod
-
 
 @app.route('/participations/all', methods=['DELETE'])
 def supression_participants():
@@ -182,4 +253,3 @@ def supression_participants():
 
 if __name__ == "__main__":
     app.run()
-
