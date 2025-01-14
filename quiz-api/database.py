@@ -18,6 +18,14 @@ def init_db():
             "possible answer" TEXT
         );
     """)
+    #table participants
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS participants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            playerName TEXT NOT NULL,
+            answers TEXT
+        );
+    """)
     conn.commit()
     conn.close()
 

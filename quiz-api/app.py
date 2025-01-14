@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 import hashlib
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db
+from questions import Question, add_question_to_db ,add_participant_to_db ,Participant, del_all_question
 from database import init_db
 
 app = Flask(__name__)
@@ -92,6 +92,51 @@ def post_question():
 
     question = Question(title, texte, image, position, possible_answer)
     return add_question_to_db(question)
+
+@app.route('/participations', methods=['POST'])
+def add_participant():
+    """
+    Endpoint pour ajouter un participant à la table participants.
+    Reçoit les données du participant au format JSON.
+    """
+    try:
+        # Récupérer les données du participant depuis la requête
+        data = request.get_json()
+
+        # Vérifier que les champs nécessaires sont présents
+        if 'playerName' not in data or 'answers' not in data:
+            return ({"message": "Missing 'playerName' or 'answers' in the request body"}), 400
+
+        # Créer une instance de Participant
+        participant = Participant(
+            playerName=data["playerName"],
+            answers=data['answers']
+        )
+
+        # Ajouter le participant à la base de données
+        response, status_code = add_participant_to_db(participant)
+        return (response), status_code
+
+    except Exception as e:
+        return {"message": f"Error processing request: {str(e)}"}, 500
+
+
+
+@app.route('/questions/all', methods=['DELETE'])
+def supression_questions():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    response, status_cod = del_all_question()
+    return (response), status_cod
 
 if __name__ == "__main__":
     app.run()

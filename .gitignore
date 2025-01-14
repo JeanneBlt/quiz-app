@@ -1,3 +1,4 @@
 quiz-api/venv/
 quiz-api/__pycache__/
 quiz-api/quiz.db
+quiz-api/participants.db
