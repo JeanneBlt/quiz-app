@@ -7,7 +7,8 @@ const questions = [
       { text: 'Londres' },
       { text: 'Berlin' },
       { text: 'Madrid' }
-    ]
+    ],
+    answerIndex: 0
   },
   {
     text: 'Quel est le plus grand océan du monde ?',
@@ -17,7 +18,8 @@ const questions = [
       { text: 'Océan Pacifique' },
       { text: 'Océan Indien' },
       { text: 'Océan Arctique' }
-    ]
+    ],
+    answerIndex: 1
   },
   {
     text: 'Quel est le plus grand désert du monde ?',
@@ -27,17 +29,19 @@ const questions = [
       { text: 'Désert de Gobi' },
       { text: 'Désert de Kalahari' },
       { text: 'Désert d’Atacama' }
-    ]
+    ],
+    answerIndex: 0
   },
   {
     text: 'Qui a écrit "Les Misérables" ?',
     image: "question_images/question4.jpg",
     answers: [
-      { text: 'Victor Hugo' },
       { text: 'Émile Zola' },
       { text: 'Albert Camus' },
-      { text: 'Marcel Proust' }
-    ]
+      { text: 'Marcel Proust' },
+      { text: 'Victor Hugo' }
+    ],
+    answerIndex: 3
   },
   {
     text: 'Quel est le symbole chimique de l\'or ?',
@@ -47,7 +51,8 @@ const questions = [
       { text: 'Ag' },
       { text: 'O' },
       { text: 'Hg' }
-    ]
+    ],
+    answerIndex: 0
   }
 ];
 

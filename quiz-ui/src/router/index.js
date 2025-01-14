@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/HomePage.vue'
-import QuestionManager from '../views/QuestionManager.vue'
-import QuizEnd from '../views/QuizEnd.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '../views/HomePage.vue';
+import QuestionManager from '../views/QuestionManager.vue';
+import Score from '../views/Score.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,14 +22,9 @@ const router = createRouter({
       component: QuestionManager,
     },
     {
-      path: "/quiz-end",
-      name: "QuizEnd",  // Page de fin du quiz
-      component: QuizEnd,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../views/AboutView.vue'), // Si vous avez une page "about"
+      path: "/score",
+      name: "Score",  // Gestion des questions du quiz
+      component: Score,
     },
   ],
 })

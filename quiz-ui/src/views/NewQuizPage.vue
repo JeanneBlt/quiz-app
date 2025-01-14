@@ -7,7 +7,9 @@
   const router = useRouter();
 
   function launchNewQuiz() {
+    participationStorageService.clear();
     participationStorageService.savePlayerName(username.value);
+    participationStorageService.saveParticipationScore(0);
     console.log("Launch new quiz with", username.value);
     router.push('/questions');
   }
