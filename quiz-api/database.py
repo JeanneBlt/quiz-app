@@ -23,7 +23,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS participants (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             playerName TEXT NOT NULL,
-            answers TEXT
+            answers TEXT,
+            score INTEGER
         );
     """)
     conn.commit()

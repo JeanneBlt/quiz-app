@@ -2,7 +2,8 @@ from flask import Flask, request
 from flask_cors import CORS
 import hashlib
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db ,add_participant_to_db ,Participant, del_all_question
+from questions import Question, add_question_to_db , del_all_question , get_quiz_length
+from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
 from database import init_db
 
 app = Flask(__name__)
@@ -45,7 +46,15 @@ def login():
 
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
-    return {"size": 0, "scores": []}, 200
+    try:
+     
+        size = get_quiz_length()
+      
+        scores, response = get_all_scores()
+        
+    except Exception as e:
+        return e, 402
+    return {"size": size , "scores" : scores},200
 
 @app.route('/test-db', methods=['GET'])
 def test_db():
@@ -137,6 +146,24 @@ def supression_questions():
         return {"message": f"Unauthorized: {str(e)}"}, 402
     response, status_cod = del_all_question()
     return (response), status_cod
+
+
+@app.route('/participations/all', methods=['DELETE'])
+def supression_participants():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    response, status_cod = del_all_participants()
+    return (response), status_cod
+
 
 if __name__ == "__main__":
     app.run()
