@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue'
+import QuestionManager from '../views/QuestionManager.vue'
+import QuizEnd from '../views/QuizEnd.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,15 +14,22 @@ const router = createRouter({
     {
       path: "/new-quiz",
       name: "NewQuiz",
-      component: () => import('../views/NewQuizPage.vue'),
+      component: () => import('../views/NewQuizPage.vue'), // Page d'accueil ou d'entrée du quiz
+    },
+    {
+      path: "/questions",
+      name: "QuestionManager",  // Gestion des questions du quiz
+      component: QuestionManager,
+    },
+    {
+      path: "/quiz-end",
+      name: "QuizEnd",  // Page de fin du quiz
+      component: QuizEnd,
     },
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('../views/AboutView.vue'), // Si vous avez une page "about"
     },
   ],
 })
