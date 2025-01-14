@@ -3,7 +3,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from jwt_utils import decode_token, build_token
 from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions
-from database import init_db
+from database import init_db, execute_query, fetch_all
 
 app = Flask(__name__)
 CORS(app)
@@ -92,6 +92,42 @@ def update_question(question_id):
         data['possibleAnswers']
     )
 
+@app.route('/questions/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    try:
+        # Récupérer la position de la question à supprimer
+        position_query = "SELECT position FROM quiz WHERE id = ?"
+        result = fetch_all(position_query, (question_id,))
+        if not result:
+            return {"message": "Question not found"}, 404
+
+        position_to_remove = result[0][0]
+
+        # Supprimer la question
+        delete_query = "DELETE FROM quiz WHERE id = ?"
+        execute_query(delete_query, (question_id,))
+
+        # Décaler les positions des questions au-dessus
+        shift_query = """
+            UPDATE quiz
+            SET position = position - 1
+            WHERE position > ?
+        """
+        execute_query(shift_query, (position_to_remove,))
+
+        return '', 204
+    except Exception as e:
+        return {"message": f"Error deleting question: {str(e)}"}, 500
 
 @app.route('/questions/all', methods=['DELETE'])
 def delete_all():
