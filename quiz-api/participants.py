@@ -75,8 +75,15 @@ def del_all_participants():
 
 def get_all_scores():
     try:
-        querry = "select playerName ,score from participants"
-        result = fetch_all(querry)
-        return  result , 200
+        query = "SELECT playerName, score FROM participants ORDER BY score DESC"
+        results = fetch_all(query)
+        
+        # Si aucun participant, renvoyer une liste vide
+        scores = [{"playerName": row[0], "score": row[1]} for row in results] if results else []
+        return scores, 200
     except Exception as e:
-        return {"message": f"Error score: {str(e)}"}, 400
+        return {"message": f"Error fetching scores: {str(e)}"}, 500
+
+
+
+    

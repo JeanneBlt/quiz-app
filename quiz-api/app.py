@@ -1,8 +1,9 @@
 import hashlib
+import json
 from flask import Flask, request
 from flask_cors import CORS
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions , del_all_question , get_quiz_length
+from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions , get_quiz_length
 from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
 from database import init_db, execute_query, fetch_all
 
@@ -57,19 +58,18 @@ def login():
         else:
             return {"message" :'Unauthorized' }, 401
 
-
-
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
     try:
-     
-        size = get_quiz_length()
-      
-        scores, response = get_all_scores()
+        size = get_quiz_length()  # Récupérer la taille du quiz
+        scores, response_status = get_all_scores()  # Récupérer les scores des participants
+        if response_status != 200:
+            return scores, response_status
         
+        # Retourner la réponse avec les champs dans le bon ordre
+        return {"size": size, "scores": scores}, 200
     except Exception as e:
-        return e, 402
-    return {"size": size , "scores" : scores},200
+        return {"message": f"Error fetching quiz info: {str(e)}"}, 500
 
 @app.route('/questions', methods=['POST'])
 def post_question():
@@ -193,8 +193,8 @@ def get_question_by_id(question_id):
         question_data = result[0]
         question = {
             "id": question_data[0],
-            "title": question_data[1],
-            "text": question_data[2],
+            "text": question_data[1],
+            "title": question_data[2],
             "image": question_data[3],
             "position": question_data[4],
             "possibleAnswers": json.loads(question_data[5]),
