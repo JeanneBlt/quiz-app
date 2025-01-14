@@ -1,17 +1,19 @@
-from flask import Flask , request
+from flask import Flask, request
 from flask_cors import CORS
 import hashlib
-from jwt_utils import decode_token,build_token
-
-app = Flask(__name__)
+from jwt_utils import decode_token, build_token
+from questions import Question, add_question_to_db
+from database import init_db
 
 app = Flask(__name__)
 CORS(app)
 
+# Initialisation de la base de données au démarrage
+init_db()
+
 @app.route('/')
 def hello_world():
-	x = 'guys'
-	return f"Hello, {x}"
+    return "Hello, world!"
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -40,9 +42,56 @@ def login():
             return {"message" :'Unauthorized' }, 401
 
 
+
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
-	return {"size": 0, "scores": []}, 200
+    return {"size": 0, "scores": []}, 200
+
+@app.route('/test-db', methods=['GET'])
+def test_db():
+    from database import fetch_all
+    try:
+        rows = fetch_all("SELECT * FROM quiz")
+        return {"message": "Database test successful", "data": rows}, 200
+    except Exception as e:
+        return {"message": f"Database test failed: {e}"}, 500
+
+@app.route('/questions', methods=['POST'])
+def post_question():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    
+    data = request.get_json()
+    if not data:
+        return {"message": "Invalid request: Missing JSON body"}, 403
+
+    title = data.get('title')
+    texte = data.get('text')
+    image = data.get('image')
+    position = data.get('position')
+    possible_answer = data.get('possibleAnswers')
+
+    print(f"Title: {title}")
+    print(f"Texte: {texte}")
+    print(f"Image: {image}")
+    print(f"Position: {position}")
+    print(f"Possible Answer: {possible_answer}")
+
+
+    # if not all([title, texte, image, position, possible_answer]):
+    #     return {"message": "Invalid request: Missing required fields"}, 401
+
+    question = Question(title, texte, image, position, possible_answer)
+    return add_question_to_db(question)
 
 if __name__ == "__main__":
     app.run()
