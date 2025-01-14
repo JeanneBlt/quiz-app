@@ -14,7 +14,7 @@ def init_db():
             texte TEXT,
             title TEXT,
             image TEXT,
-            position INTEGER UNIQUE,
+            position INTEGER,
             "possible answer" TEXT
         );
     """)

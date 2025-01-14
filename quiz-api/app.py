@@ -4,10 +4,6 @@ import hashlib
 from jwt_utils import decode_token, build_token
 from questions import Question, add_question_to_db
 from database import init_db
-from flask import Flask , request
-from flask_cors import CORS
-import hashlib
-from jwt_utils import decode_token,build_token
 
 app = Flask(__name__)
 CORS(app)
