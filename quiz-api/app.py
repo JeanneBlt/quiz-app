@@ -2,14 +2,30 @@ from flask import Flask, request
 from flask_cors import CORS
 import hashlib
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db
+from questions import Question, add_question_to_db , del_all_question , get_quiz_length
+from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
 from database import init_db
 
 app = Flask(__name__)
 CORS(app)
 
 # Initialisation de la base de données au démarrage
-init_db()
+@app.route('/rebuild-db', methods=['POST'])
+def rebuild():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    init_db()
+    return "Ok" , 200
 
 @app.route('/')
 def hello_world():
@@ -41,9 +57,19 @@ def login():
         else:
             return {"message" :'Unauthorized' }, 401
 
+
+
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
-    return {"size": 0, "scores": []}, 200
+    try:
+     
+        size = get_quiz_length()
+      
+        scores, response = get_all_scores()
+        
+    except Exception as e:
+        return e, 402
+    return {"size": size , "scores" : scores},200
 
 @app.route('/test-db', methods=['GET'])
 def test_db():
@@ -90,6 +116,69 @@ def post_question():
 
     question = Question(title, texte, image, position, possible_answer)
     return add_question_to_db(question)
+
+@app.route('/participations', methods=['POST'])
+def add_participant():
+    """
+    Endpoint pour ajouter un participant à la table participants.
+    Reçoit les données du participant au format JSON.
+    """
+    try:
+        # Récupérer les données du participant depuis la requête
+        data = request.get_json()
+
+        # Vérifier que les champs nécessaires sont présents
+        if 'playerName' not in data or 'answers' not in data:
+            return ({"message": "Missing 'playerName' or 'answers' in the request body"}), 400
+
+        # Créer une instance de Participant
+        participant = Participant(
+            playerName=data["playerName"],
+            answers=data['answers']
+        )
+
+        # Ajouter le participant à la base de données
+        response, status_code = add_participant_to_db(participant)
+        return (response), status_code
+
+    except Exception as e:
+        return {"message": f"Error processing request: {str(e)}"}, 500
+
+
+
+@app.route('/questions/all', methods=['DELETE'])
+def supression_questions():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    response, status_cod = del_all_question()
+    return (response), status_cod
+
+
+@app.route('/participations/all', methods=['DELETE'])
+def supression_participants():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    response, status_cod = del_all_participants()
+    return (response), status_cod
+
 
 if __name__ == "__main__":
     app.run()

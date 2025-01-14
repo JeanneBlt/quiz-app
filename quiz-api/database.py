@@ -19,6 +19,16 @@ def init_db():
         );
     """)
     conn.commit()
+    #table participants
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS participants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            playerName TEXT NOT NULL,
+            answers TEXT,
+            score INTEGER
+        );
+    """)
+    conn.commit()
     conn.close()
 
 def execute_query(query, params=()):
