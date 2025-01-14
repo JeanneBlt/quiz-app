@@ -18,6 +18,7 @@ def init_db():
             "possible answer" TEXT
         );
     """)
+    conn.commit()
     #table participants
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS participants (

@@ -10,7 +10,22 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialisation de la base de données au démarrage
-init_db()
+@app.route('/rebuild-db', methods=['POST'])
+def rebuild():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    init_db()
+    return "Ok" , 200
 
 @app.route('/')
 def hello_world():
