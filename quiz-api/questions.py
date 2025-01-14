@@ -9,16 +9,6 @@ class Question:
         self.position = position
         self.possible_answer = possible_answer
 
-
-def del_all_question():
-    try: 
-        querry = "DELETE FROM quiz"
-        execute_query(querry)
-        return {"message": "base quiz suprimé"}, 204
-    except Exception as e:
-        return {"message": f"Error delete: {str(e)}"}, 400
-
-
     def to_dict(self):
         return {
             "title": self.title,
@@ -27,6 +17,16 @@ def del_all_question():
             "position": self.position,
             "possibleAnswers": json.loads(self.possible_answer),
         }
+
+
+
+def del_all_question():
+    try: 
+        querry = "DELETE FROM quiz"
+        execute_query(querry)
+        return {"message": "base quiz suprimé"}, 204
+    except Exception as e:
+        return {"message": f"Error delete: {str(e)}"}, 400
 
 
 def add_question_to_db(question: Question):
@@ -47,12 +47,11 @@ def add_question_to_db(question: Question):
         possible_answer_json = json.dumps(question.possible_answer)
         params = (question.title, question.texte, question.image, question.position, possible_answer_json)
         execute_query(query, params)
-        #mal codé
-        query = """
-            select id from quiz WHERE position = ?
-        """
-        id = fetch_all(query,(question.position,))
-        return {"message": "Question added successfully","id": id}, 200
+        #mauvais code
+        query = "select id from quiz WHERE position = ?"
+        id = fetch_all(query,(question.position, ))
+
+        return {"message": "Question added successfully" , "id":id}, 200
     except Exception as e:
         return {"message": f"Error adding question: {str(e)}"}, 400
 

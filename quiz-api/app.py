@@ -2,9 +2,9 @@ import hashlib
 from flask import Flask, request
 from flask_cors import CORS
 from jwt_utils import decode_token, build_token
-from questions import Question, add_question_to_db , del_all_question , get_quiz_length
+from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions , del_all_question , get_quiz_length
 from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
-from database import init_db
+from database import init_db, execute_query, fetch_all
 
 app = Flask(__name__)
 CORS(app)
@@ -90,69 +90,6 @@ def post_question():
     question = Question(data['title'], data['text'], data['image'], data['position'], data['possibleAnswers'])
     return add_question_to_db(question)
 
-@app.route('/participations', methods=['POST'])
-def add_participant():
-    """
-    Endpoint pour ajouter un participant à la table participants.
-    Reçoit les données du participant au format JSON.
-    """
-    try:
-        # Récupérer les données du participant depuis la requête
-        data = request.get_json()
-
-        # Vérifier que les champs nécessaires sont présents
-        if 'playerName' not in data or 'answers' not in data:
-            return ({"message": "Missing 'playerName' or 'answers' in the request body"}), 400
-
-        # Créer une instance de Participant
-        participant = Participant(
-            playerName=data["playerName"],
-            answers=data['answers']
-        )
-
-        # Ajouter le participant à la base de données
-        response, status_code = add_participant_to_db(participant)
-        return (response), status_code
-
-    except Exception as e:
-        return {"message": f"Error processing request: {str(e)}"}, 500
-
-
-
-@app.route('/questions/all', methods=['DELETE'])
-def supression_questions():
-    token = request.headers.get('Authorization')
-    if not token:
-        return {"message": "Unauthorized: Missing token"}, 401
-
-    if token.startswith("Bearer "):
-        token = token.split(" ")[1]
-    
-    try:
-        decode_token(token)
-    except Exception as e:
-        return {"message": f"Unauthorized: {str(e)}"}, 402
-    response, status_cod = del_all_question()
-    return (response), status_cod
-
-
-@app.route('/participations/all', methods=['DELETE'])
-def supression_participants():
-    token = request.headers.get('Authorization')
-    if not token:
-        return {"message": "Unauthorized: Missing token"}, 401
-
-    if token.startswith("Bearer "):
-        token = token.split(" ")[1]
-    
-    try:
-        decode_token(token)
-    except Exception as e:
-        return {"message": f"Unauthorized: {str(e)}"}, 402
-    response, status_cod = del_all_participants()
-    return (response), status_cod
-
-
 
 @app.route('/questions', methods=['GET'])
 def get_question():
@@ -192,10 +129,126 @@ def update_question(question_id):
         data['possibleAnswers']
     )
 
+@app.route('/questions/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    token = token.split(" ")[1]
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+
+    try:
+        # Récupérer la position de la question à supprimer
+        position_query = "SELECT position FROM quiz WHERE id = ?"
+        result = fetch_all(position_query, (question_id,))
+        if not result:
+            return {"message": "Question not found"}, 404
+
+        position_to_remove = result[0][0]
+
+        # Supprimer la question
+        delete_query = "DELETE FROM quiz WHERE id = ?"
+        execute_query(delete_query, (question_id,))
+
+        # Décaler les positions des questions au-dessus
+        shift_query = """
+            UPDATE quiz
+            SET position = position - 1
+            WHERE position > ?
+        """
+        execute_query(shift_query, (position_to_remove,))
+
+        return '', 204
+    except Exception as e:
+        return {"message": f"Error deleting question: {str(e)}"}, 500
 
 @app.route('/questions/all', methods=['DELETE'])
 def delete_all():
+
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
     return delete_all_questions()
+    
+@app.route('/questions/<int:question_id>', methods=['GET'])
+def get_question_by_id(question_id):
+    try:
+        query = "SELECT * FROM quiz WHERE id = ?"
+        result = fetch_all(query, (question_id,))
+        if not result:
+            return {"message": "Question not found"}, 404
+
+        question_data = result[0]
+        question = {
+            "id": question_data[0],
+            "title": question_data[1],
+            "text": question_data[2],
+            "image": question_data[3],
+            "position": question_data[4],
+            "possibleAnswers": json.loads(question_data[5]),
+        }
+
+        return question, 200
+    except Exception as e:
+        return {"message": f"Error retrieving question: {str(e)}"}, 500
+
+@app.route('/participations', methods=['POST'])
+def add_participant():
+    """
+    Endpoint pour ajouter un participant à la table participants.
+    Reçoit les données du participant au format JSON.
+    """
+    try:
+        # Récupérer les données du participant depuis la requête
+        data = request.get_json()
+
+        # Vérifier que les champs nécessaires sont présents
+        if 'playerName' not in data or 'answers' not in data:
+            return ({"message": "Missing 'playerName' or 'answers' in the request body"}), 400
+
+        # Créer une instance de Participant
+        participant = Participant(
+            playerName=data["playerName"],
+            answers=data['answers']
+        )
+
+        # Ajouter le participant à la base de données
+        response, status_code = add_participant_to_db(participant)
+        return (response), status_code
+
+    except Exception as e:
+        return {"message": f"Error processing request: {str(e)}"}, 500
+
+
+
+
+@app.route('/participations/all', methods=['DELETE'])
+def supression_participants():
+    token = request.headers.get('Authorization')
+    if not token:
+        return {"message": "Unauthorized: Missing token"}, 401
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    
+    try:
+        decode_token(token)
+    except Exception as e:
+        return {"message": f"Unauthorized: {str(e)}"}, 402
+    response, status_cod = del_all_participants()
+    return (response), status_cod
 
 
 if __name__ == "__main__":
