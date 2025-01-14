@@ -47,8 +47,12 @@ def add_question_to_db(question: Question):
         possible_answer_json = json.dumps(question.possible_answer)
         params = (question.title, question.texte, question.image, question.position, possible_answer_json)
         execute_query(query, params)
-
-        return {"message": "Question added successfully"}, 200
+        #mal codé
+        query = """
+            select id from quiz WHERE position = ?
+        """
+        id = fetch_all(query,(question.position,))
+        return {"message": "Question added successfully","id": id}, 200
     except Exception as e:
         return {"message": f"Error adding question: {str(e)}"}, 400
 

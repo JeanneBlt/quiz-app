@@ -71,21 +71,6 @@ def GetQuizInfo():
         return e, 402
     return {"size": size , "scores" : scores},200
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    if not data or not data.get('password'):
-        return 'Unauthorized', 401
-
-    password = data.get('password').encode('UTF-8')
-    hash = hashlib.md5(password).digest()
-
-    if hash == b'\xd8\x17\x06PG\x92\x93\xc1.\x02\x01\xe5\xfd\xf4_@':
-        token = build_token()
-        return {"message": "Login successful", "token": token}, 200
-    else:
-        return {"message": "Unauthorized"}, 401
-
 @app.route('/questions', methods=['POST'])
 def post_question():
     token = request.headers.get('Authorization')
@@ -101,7 +86,7 @@ def post_question():
     data = request.get_json()
     if not data:
         return {"message": "Invalid request: Missing JSON body"}, 403
-
+    
     question = Question(data['title'], data['text'], data['image'], data['position'], data['possibleAnswers'])
     return add_question_to_db(question)
 
