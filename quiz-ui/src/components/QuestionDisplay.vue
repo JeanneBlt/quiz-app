@@ -1,5 +1,6 @@
 <template>
   <img v-if="currentQuestion.image" :src="currentQuestion.image" alt="Question Image"/>
+  <p>{{ currentQuestion.title }}</p>
   <p>{{ currentQuestion.text }}</p>
   <ul>
       <li v-for="(answer, index) in currentQuestion.answers" :key="index">
