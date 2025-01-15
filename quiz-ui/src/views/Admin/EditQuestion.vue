@@ -105,11 +105,11 @@ export default {
       const position = parseInt(this.$route.params.position);
       if (this.isEditing) {
         QuizService.updateQuestion(position, this.question).then(() => {
-          this.$router.push({ name: 'QuestionManager' });
+          this.$router.push({ name: 'QuestionList' });
         });
       } else {
         QuizService.addQuestion(this.question).then(() => {
-          this.$router.push({ name: 'QuestionManager' });
+          this.$router.push({ name: 'QuestionList' });
         });
       }
     },
