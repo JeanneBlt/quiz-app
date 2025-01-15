@@ -41,7 +41,7 @@ onMounted(async () => {
         Ton classement : {{ classement }}
     </div>
     <nav>
-        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/">Recommencer</RouterLink>
     </nav>
 </template>
 

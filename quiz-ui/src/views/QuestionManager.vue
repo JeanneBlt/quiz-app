@@ -68,6 +68,6 @@
   </div>
 </template>
 
-<style>
+<style scoped>
   /* Vous pouvez ajouter vos styles ici */
 </style>
