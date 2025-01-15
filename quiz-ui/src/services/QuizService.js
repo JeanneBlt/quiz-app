@@ -1,5 +1,6 @@
 const questions = [
   {
+    title: 'Géographie',
     text: 'Quelle est la capitale de la France ?',
     image: "question_images/question1.jpg",
     answers: [
@@ -11,6 +12,7 @@ const questions = [
     answerIndex: 0
   },
   {
+    title: 'Océans',
     text: 'Quel est le plus grand océan du monde ?',
     image: "question_images/question2.jpg",
     answers: [
@@ -22,6 +24,7 @@ const questions = [
     answerIndex: 1
   },
   {
+    title: 'Déserts',
     text: 'Quel est le plus grand désert du monde ?',
     image: "question_images/question3.jpg",
     answers: [
@@ -33,6 +36,7 @@ const questions = [
     answerIndex: 0
   },
   {
+    title: 'Littérature',
     text: 'Qui a écrit "Les Misérables" ?',
     image: "question_images/question4.jpg",
     answers: [
@@ -44,6 +48,7 @@ const questions = [
     answerIndex: 3
   },
   {
+    title: 'Chimie',
     text: 'Quel est le symbole chimique de l\'or ?',
     image: "question_images/question5.jpg",
     answers: [
@@ -57,21 +62,37 @@ const questions = [
 ];
 
 export default {
-
   getQuestionByPosition(position) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(questions[position - 1]); // Position commence à 1, donc on accède à l'index - 1
+        resolve(questions[position - 1]);
       }, 0);
     });
   },
-  
-  
+
   getTotalQuestions() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(questions.length);
       }, 0);
+    });
+  },
+
+  updateQuestion(position, updatedQuestion) {
+    return new Promise((resolve, reject) => {
+      if (position > 0 && position <= questions.length) {
+        questions[position - 1] = updatedQuestion; 
+        resolve();
+      } else {
+        reject("Question non trouvée");
+      }
+    });
+  },
+
+  addQuestion(newQuestion) {
+    return new Promise((resolve) => {
+      questions.push(newQuestion);
+      resolve();
     });
   }
 };

@@ -1,8 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
+import NewQuizPage from '../views/NewQuizPage.vue';
 import QuestionManager from '../views/QuestionManager.vue';
 import Score from '../views/Score.vue';
-import Admin from '../views/Admin.vue'
+
+// Admin views
+import Admin from '../views/Admin/Admin.vue'; // Page d'accueil admin (connexion)
+import QuestionList from '../views/Admin/QuestionList.vue'; // Liste des questions
+import QuestionDetail from '../views/Admin/QuestionDetail.vue'; // Détail d'une question
+import EditQuestion from '../views/Admin/EditQuestion.vue'; // Édition d'une question
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,7 +21,7 @@ const router = createRouter({
     {
       path: "/new-quiz",
       name: "NewQuiz",
-      component: () => import('../views/NewQuizPage.vue'), // Page d'accueil ou d'entrée du quiz
+      component: NewQuizPage, // Page d'accueil ou d'entrée du quiz
     },
     {
       path: "/questions",
@@ -24,15 +30,32 @@ const router = createRouter({
     },
     {
       path: "/score",
-      name: "Score",  // Gestion des questions du quiz
+      name: "Score",
       component: Score,
     },
     {
       path: "/admin",
-      name: "Admin",  // Gestion des questions du quiz
-      component: Admin,
+      name: "Admin",
+      component: Admin,  // Page de login admin
     },
+    {
+      path: "/admin/questions",
+      name: "QuestionList",
+      component: QuestionList, // Liste des questions
+    },
+    {
+      path: "/admin/question/:position",
+      name: "QuestionDetail",
+      component: QuestionDetail, // Détail d'une question
+      props: true, // Passer la position comme paramètre
+    },
+    {
+      path: "/admin/edit-question/:position",
+      name: "EditQuestion",
+      component: EditQuestion, // Page d'édition d'une question
+      props: true, // Passer la position comme paramètre
+    }
   ],
-})
+});
 
-export default router
+export default router;
