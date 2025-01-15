@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 venv/
 .vscode
 __pycache__
 quiz.db
+=======
+venv/
+.vscode
+__pycache__
+quiz.db
+>>>>>>> main
