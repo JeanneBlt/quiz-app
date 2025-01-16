@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import participationStorageService from "@/services/ParticipationStorageService";
-import QuizService from '../services/QuizService.js';
+import QuizApiService from '@/services/QuizApiService';
 import QuestionDisplay from '../components/QuestionDisplay.vue';
 
 // Références réactives pour la gestion de l'état
@@ -14,20 +14,26 @@ const score = ref(0);
 
 // Fonction pour charger une question en fonction de sa position
 async function loadQuestionByPosition(position) {
-  const question = await QuizService.getQuestionByPosition(position);
-  currentQuestion.value = question;
+  const response = await QuizApiService.getQuestion(position);
+  currentQuestion.value = response.data;
 }
 
 // Fonction de gestion de la réponse lorsque l'utilisateur clique sur une réponse
-function answerClickedHandler(selectedAnswerIndex) {
-  if (currentQuestion.value.answerIndex === selectedAnswerIndex) {
+function answerClickedHandler({ answer, index }) {
+  if (answer.isCorrect) {
+    console.log("correct");
     score.value++;
   }
 
+  // Ajouter l'index au stockage
+  participationStorageService.addUserAnswer(index);
+
+  // Charge la question suivante ou termine le quiz
   if (currentQuestionPosition.value < totalNumberOfQuestions.value) {
     currentQuestionPosition.value++;
     loadQuestionByPosition(currentQuestionPosition.value);
   } else {
+    // Sauvegarde du score avant de terminer le quiz
     participationStorageService.saveParticipationScore(score.value);
     endQuiz();
   }
@@ -35,12 +41,14 @@ function answerClickedHandler(selectedAnswerIndex) {
 
 // Fonction pour gérer la fin du quiz
 function endQuiz() {
+  participationStorageService.sendPlayerData();
   router.push('/score');
 }
 
 // Initialisation au montage du composant
 onMounted(async () => {
-  totalNumberOfQuestions.value = await QuizService.getTotalQuestions();
+  const response = await QuizApiService.getQuizInfo();
+  totalNumberOfQuestions.value = response.data.size;
   await loadQuestionByPosition(currentQuestionPosition.value);
 });
 </script>

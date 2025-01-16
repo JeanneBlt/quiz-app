@@ -1,9 +1,4 @@
 export default {
-    /**
-     * Sauvegarde un score pour un joueur dans localStorage. Remplace le score si le nouveau est supérieur.
-     * @param {string} playerName - Le nom du joueur.
-     * @param {number} score - Le score du joueur.
-     */
     saveScore(playerName, score) {
       const scores = this.getScores(); // Récupère les scores existants.
       

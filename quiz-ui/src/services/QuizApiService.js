@@ -1,8 +1,8 @@
-import axios from "axios";
+import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: `${import.meta.env.VITE_API_URL}`,
-  json: true
+  baseURL: `${import.meta.env.VITE_API_URL}`,
+  json: true,
 });
 
 export default {
@@ -25,12 +25,47 @@ export default {
       })
       .catch((error) => {
         console.error(error);
+        throw error; // Propager l'erreur pour la gérer au besoin
       });
   },
+
   getQuizInfo() {
     return this.call("get", "quiz-info");
   },
+
   getQuestion(position) {
-    // not implemented
-  }
+    return this.call("get", `questions?position=${position}`);
+  },
+
+  addQuestion(question, token) {
+    return this.call("post", "questions", question, token);
+  },
+
+  updateQuestion(id, question, token) {
+    return this.call("put", `questions/${id}`, question, token);
+  },
+
+  deleteQuestion(id, token) {
+    return this.call("delete", `questions/${id}`, null, token);
+  },
+
+  // Nouvelle méthode pour soumettre les données utilisateur
+  async submitPlayerData(playerName, answers) {
+    const data = {
+      playerName,
+      answers,
+    };
+
+    return this.call("post", "participations", data)
+      .then((response) => {
+        if (response.status === 200) {
+          console.log("Player data successfully submitted:", response.data);
+          return response.data;
+        } else {
+          console.error("Failed to submit player data:", response);
+          throw new Error("Failed to submit player data");
+        }
+      });
+  },
 };
+

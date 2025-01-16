@@ -3,25 +3,25 @@
   <p>{{ currentQuestion.title }}</p>
   <p>{{ currentQuestion.text }}</p>
   <ul>
-      <li v-for="(answer, index) in currentQuestion.answers" :key="index">
-        <a @click="emit('click-on-answer', index)">{{ answer.text }}</a>
-      </li>
+    <li v-for="(answer, index) in currentQuestion.possibleAnswers" :key="index">
+      <a @click="emit('click-on-answer', { answer, index })">{{ answer.text }}</a>
+    </li>
   </ul>
 </template>
 
 <script setup>
-  import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
-  const props = defineProps({
-    currentQuestion: Object
-  });
+const props = defineProps({
+  currentQuestion: Object
+});
 
-  const emit = defineEmits(['click-on-answer']);
+const emit = defineEmits(['click-on-answer']);
 </script>
 
 <style>
-  img {
-    max-width: 50%;
-    height: auto;
-  }
+img {
+  max-width: 50%;
+  height: auto;
+}
 </style>
