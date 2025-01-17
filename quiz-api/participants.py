@@ -44,7 +44,7 @@ def add_participant_to_db(participant: Participant):
 
 def calcul_score(answers):
     answers = json.loads(answers)
-    print(answers)
+    
     try:
         querry = 'SELECT position,"possible answer" FROM quiz'
         result = fetch_all(querry)
@@ -54,11 +54,9 @@ def calcul_score(answers):
     
     score = 0
     for i, response in enumerate(answers):
-        print("______")
-        print(i)
+        
         reponse_correct = next((j for j, item in enumerate(quiz_dict[i+1]) if item["isCorrect"] is True), None) +1
-        print(response)
-        print(reponse_correct)
+        
         
         if reponse_correct == response:
             score= score + 1
