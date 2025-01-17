@@ -64,6 +64,47 @@
 			"response": []
 		},
 		{
+			"name": "Rebuild db Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response ok\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.body(\"Ok\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/rebuild-db",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rebuild-db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "question 1",
 			"request": {
 				"auth": {
@@ -238,6 +279,118 @@
 					],
 					"path": [
 						"questions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get quiz info - Ensure empty Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/quiz-info",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"quiz-info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete all questions Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Request respond ok\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/questions/all",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"questions",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete all participations Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Request respond ok deleted\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/participations/all",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"participations",
+						"all"
 					]
 				}
 			},
