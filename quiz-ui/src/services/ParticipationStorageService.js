@@ -36,7 +36,7 @@ export default {
 
   addUserAnswer(answerIndex) {
     const currentAnswers = this.getUserAnswers();
-    currentAnswers.push(answerIndex);
+    currentAnswers.push(answerIndex+1);
     this.saveUserAnswers(currentAnswers);
   },
 
