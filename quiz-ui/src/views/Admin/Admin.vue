@@ -11,7 +11,7 @@ const errorMessage = ref(''); // Pour afficher le message d'erreur de l'API
 const login = async () => { 
   try {
     const response = await quizApiService.call("post", "/login", { password: password.value });
-    console.log("Réponse de login:", response); // Ajout du log
+    console.log("Réponse de login :", response); // Ajout du log
 
     if (response.status === 200 && response.data.token) {
       const token = response.data.token;

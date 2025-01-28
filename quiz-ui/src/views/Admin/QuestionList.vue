@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     fetchQuestions() {
-      const totalQuestions = 5;
+      const totalQuestions = 10;
       for (let i = 1; i <= totalQuestions; i++) {
         QuizService.getQuestionByPosition(i).then((question) => {
           this.questions.push(question);
