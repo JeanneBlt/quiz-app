@@ -10,8 +10,14 @@ export default {
     var headers = {
       "Content-Type": "application/json",
     };
-    if (token != null) {
-      headers.authorization = "Bearer " + token;
+
+    if (!token) {
+      token = localStorage.getItem('authToken');
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      console.log("Token envoyé :", headers.Authorization); // Ajout du log
     }
 
     return instance({
@@ -20,15 +26,15 @@ export default {
       url: resource,
       data,
     })
-      .then((response) => {
-        return { status: response.status, data: response.data };
-      })
-      .catch((error) => {
-        console.error(error);
-        throw error; // Propager l'erreur pour la gérer au besoin
-      });
+    .then((response) => {
+      return { status: response.status, data: response.data };
+    })
+    .catch((error) => {
+      console.error("Erreur API :", error.response?.status, error.response?.data);
+      throw error; 
+    });
   },
-
+  
   getQuizInfo() {
     return this.call("get", "quiz-info");
   },

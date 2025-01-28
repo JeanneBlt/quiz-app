@@ -1,18 +1,34 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import quizApiService from "@/services/QuizApiService";
 
 const router = useRouter();
 const password = ref('');
 const loginError = ref(false);
+const errorMessage = ref(''); // Pour afficher le message d'erreur de l'API
 
-const login = () => {
-  if (password.value === 'adminpassword') {
-    router.push('/admin/questions'); // Redirige vers la page admin si connexion réussie
-  } else {
+const login = async () => { 
+  try {
+    const response = await quizApiService.call("post", "/login", { password: password.value });
+    console.log("Réponse de login:", response); // Ajout du log
+
+    if (response.status === 200 && response.data.token) {
+      const token = response.data.token;
+      console.log("Token reçu :", token); // Vérifie si un token est bien renvoyé
+      localStorage.setItem('authToken', token); 
+      router.push('/admin/questions'); 
+    } else {
+      loginError.value = true;
+      errorMessage.value = response.data.message || "Erreur de connexion.";
+    }
+  } catch (error) {
+    console.error("Erreur de connexion:", error.response?.data);
     loginError.value = true;
+    errorMessage.value = error.response?.data?.message || "Erreur de connexion au serveur.";
   }
 };
+
 </script>
 
 <template>

@@ -12,7 +12,7 @@ class JwtError(Exception):
         super().__init__(self.message)
 
 
-secret ="Best group ever"
+secret ="admin"
 expiration_in_seconds = 3600
 
 
