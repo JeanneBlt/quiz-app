@@ -150,6 +150,8 @@ export default {
         }
 
         const position = parseInt(this.$route.params.position);
+        console.log("Position récupérée :", position);
+
         if (this.isEditing) {
             console.log("Mise à jour de la question :", this.question);
             await QuizService.updateQuestion(position, this.question, token);
@@ -157,6 +159,7 @@ export default {
             console.log("Création d'une nouvelle question :", this.question);
             await QuizService.addQuestion(this.question, token);
         }
+
         this.$router.push({ name: 'QuestionList' });
     } catch (error) {
         console.error('Erreur lors de la sauvegarde de la question :', error);

@@ -43,14 +43,16 @@ export default {
 
   async updateQuestion(id, updatedQuestion, token) {
     try {
+        console.log(`🔍 Envoi de la requête PUT pour la question ${id}`, updatedQuestion);
+
         const response = await axios.put(
             `http://localhost:5000/questions/${id}`,
             {
                 title: updatedQuestion.title,
                 text: updatedQuestion.text,
-                image: updatedQuestion.image || "",
+                image: updatedQuestion.image || "", 
                 position: updatedQuestion.position || 1,
-                possibleAnswers: updatedQuestion.answers,
+                possibleAnswers: updatedQuestion.answers || [],
             },
             {
                 headers: {
@@ -59,9 +61,11 @@ export default {
                 },
             }
         );
+
+        console.log(`Réponse du serveur :`, response.data);
         return response.data;
     } catch (error) {
-        console.error("Erreur lors de la mise à jour de la question :", error.response?.data || error.message);
+        console.error(`Erreur lors de la mise à jour de la question ${id} :`, error.response?.data || error.message);
         throw error;
     }
 },

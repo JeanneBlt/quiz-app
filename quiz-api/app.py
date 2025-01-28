@@ -6,9 +6,9 @@ from jwt_utils import decode_token, build_token
 from questions import Question, add_question_to_db, get_question_by_position, update_question_in_db, delete_all_questions , get_quiz_length
 from participants import add_participant_to_db ,Participant ,get_all_scores , del_all_participants
 from database import init_db, execute_query, fetch_all
-
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})  # Autorise toutes les origines
+
 
 # Initialisation de la base de données au démarrage
 @app.route('/rebuild-db', methods=['POST'])
