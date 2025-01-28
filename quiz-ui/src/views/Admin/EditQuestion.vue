@@ -57,6 +57,19 @@
         </div>
       </div>
 
+      <!-- Position de la question -->
+      <div class="input-group">
+        <label for="questionPosition">Position de la question :</label>
+        <input 
+          type="number" 
+          id="questionPosition" 
+          v-model.number="question.position" 
+          min="1"
+          placeholder="Position de la question" 
+          required 
+        />
+      </div>
+
       <!-- Boutons de sauvegarde ou d'annulation -->
       <div class="button-group">
         <button type="submit" class="submit-button">Sauvegarder</button>
@@ -70,26 +83,27 @@
 import QuizService from '../../services/QuizService';
 
 export default {
+  props: {
+    position: {
+      type: [Number, String],
+      default: 1
+    }
+  },
   data() {
     return {
       question: {
         title: '',
         text: '',
         image: null,
-        answers: [
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-        ],
+        position: Number(this.position),
+        answers: Array(4).fill().map(() => ({ text: '', isCorrect: false }))
       },
       imagePreview: null,
-      isEditing: false,
+      isEditing: false
     };
   },
   created() {
     const position = this.$route.params.position;
-
     if (position && !isNaN(position)) {
       this.isEditing = true;
       this.fetchQuestion(position);
@@ -101,7 +115,7 @@ export default {
     async fetchQuestion(position) {
       try {
         const question = await QuizService.getQuestionByPosition(position);
-        this.question = { ...question };
+        this.question = { ...question, position: question.position || 1 };
         this.imagePreview = question.image;
       } catch (error) {
         console.error('Erreur lors de la récupération de la question :', error);
@@ -113,12 +127,8 @@ export default {
         title: '',
         text: '',
         image: null,
-        answers: [
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-        ],
+        position: 1,
+        answers: Array(4).fill().map(() => ({ text: '', isCorrect: false }))
       };
       this.imagePreview = null;
       this.isEditing = false;
@@ -136,43 +146,29 @@ export default {
     },
     onAnswerCorrectChange(index) {
       this.question.answers.forEach((answer, i) => {
-        if (i !== index) {
-          answer.isCorrect = false;
-        }
+        if (i !== index) answer.isCorrect = false;
       });
     },
     async saveQuestion() {
-    try {
+      try {
         const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert("Authentification requise pour cette action !");
-            return;
-        }
-
         const position = parseInt(this.$route.params.position);
-        console.log("Position récupérée :", position);
+        let response;
 
         if (this.isEditing) {
-            console.log("Mise à jour de la question :", this.question);
-            await QuizService.updateQuestion(position, this.question, token);
+          response = await QuizService.updateQuestion(position, this.question, token);
         } else {
-            console.log("Création d'une nouvelle question :", this.question);
-            await QuizService.addQuestion(this.question, token);
+          response = await QuizService.addQuestion(this.question, token);
         }
 
-        this.$router.push({ name: 'QuestionList' });
-    } catch (error) {
+        this.$router.push({ name: 'QuestionList' }).then(() => location.reload());
+      } catch (error) {
         console.error('Erreur lors de la sauvegarde de la question :', error);
+      }
     }
-}
-
-  },
+  }
 };
 </script>
-
-<style scoped>
-/* Garde le style existant */
-</style>
 
 
 <style scoped>
