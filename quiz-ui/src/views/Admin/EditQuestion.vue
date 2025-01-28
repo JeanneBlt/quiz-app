@@ -53,7 +53,7 @@
             :id="'correctAnswer' + index"
             @change="onAnswerCorrectChange(index)" 
           />
-          <label for="'correctAnswer' + index">Réponse correcte</label>
+          <label :for="'correctAnswer' + index">Réponse correcte</label>
         </div>
       </div>
 
@@ -68,24 +68,23 @@
 
 <script>
 import QuizService from '../../services/QuizService';
-import QuizApiService from '../../services/QuizApiService';
 
 export default {
   data() {
     return {
       question: {
-        title: '', // Titre de la question
-        text: '',  // Texte de la question
+        title: '',
+        text: '',
         image: null,
         answers: [
           { text: '', isCorrect: false },
           { text: '', isCorrect: false },
           { text: '', isCorrect: false },
-          { text: '', isCorrect: false }
-        ]
+          { text: '', isCorrect: false },
+        ],
       },
       imagePreview: null,
-      isEditing: false
+      isEditing: false,
     };
   },
   created() {
@@ -99,13 +98,15 @@ export default {
     }
   },
   methods: {
-    fetchQuestion(position) {
-      QuizService.getQuestionByPosition(position).then((question) => {
+    async fetchQuestion(position) {
+      try {
+        const question = await QuizService.getQuestionByPosition(position);
         this.question = { ...question };
         this.imagePreview = question.image;
-      }).catch(() => {
+      } catch (error) {
+        console.error('Erreur lors de la récupération de la question :', error);
         this.initializeNewQuestion();
-      });
+      }
     },
     initializeNewQuestion() {
       this.question = {
@@ -116,8 +117,8 @@ export default {
           { text: '', isCorrect: false },
           { text: '', isCorrect: false },
           { text: '', isCorrect: false },
-          { text: '', isCorrect: false }
-        ]
+          { text: '', isCorrect: false },
+        ],
       };
       this.imagePreview = null;
       this.isEditing = false;
@@ -128,6 +129,7 @@ export default {
         const reader = new FileReader();
         reader.onload = () => {
           this.imagePreview = reader.result;
+          this.question.image = reader.result;
         };
         reader.readAsDataURL(file);
       }
@@ -139,24 +141,36 @@ export default {
         }
       });
     },
-    saveQuestion() {
-      const position = parseInt(this.$route.params.position);
-      if (this.isEditing) {
-        QuizService.updateQuestion(position, this.question).then(() => {
-          this.$router.push({ name: 'QuestionList' });
-        });
-      } else {
-        QuizService.addQuestion(this.question).then(() => {
-          this.$router.push({ name: 'QuestionList' });
-        });
-      }
-    },
-    cancelEdit() {
-      this.$router.push({ name: 'QuestionList' });
+    async saveQuestion() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert("Authentification requise pour cette action !");
+            return;
+        }
+
+        const position = parseInt(this.$route.params.position);
+        if (this.isEditing) {
+            console.log("Mise à jour de la question :", this.question);
+            await QuizService.updateQuestion(position, this.question, token);
+        } else {
+            console.log("Création d'une nouvelle question :", this.question);
+            await QuizService.addQuestion(this.question, token);
+        }
+        this.$router.push({ name: 'QuestionList' });
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de la question :', error);
     }
-  }
+}
+
+  },
 };
 </script>
+
+<style scoped>
+/* Garde le style existant */
+</style>
+
 
 <style scoped>
 /* Styles généraux */
